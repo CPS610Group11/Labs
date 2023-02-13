@@ -1,7 +1,7 @@
 import java.io.*;
 import java.sql.*;
 import java.util.Scanner;
-class calGPA
+class lab01
 {
     public static void main (String args[]) throws SQLException, IOException
     {
@@ -16,16 +16,20 @@ class calGPA
         String dbacct, passwrd, name;
         char grade;
         int credit;
-        dbacct = readEntry("Enter database account: ");
-        passwrd = readEntry("Enter password: ");
-        Connection conn = DriverManager.getConnection("jdbc:oracle:oci8:"+dbacct+"/"+passwrd);
-        String stmt1 = "select G.Grade, C.Credit_hours\nfrom STUDENT S, GRADE_REPORT G, SECTION SEC, COURSE C\nwhere G.Student_number=S.Student_number AND\nG.Section_identifier=SEC.Section_identifier AND\nSEC.Course_number=C.Course_number AND S.Name=?";
+        Scanner scanner = new Scanner(System.in);
+        dbacct = readEntry("Enter database account: ", scanner);
+        passwrd = readEntry("Enter password: ", scanner);
+        Connection conn = DriverManager.getConnection("jdbc:oracle:thin:"+dbacct+"/"+passwrd+"@localhost:1521:xe");
+        String stmt1 = "SELECT G.Grade, C.Credit_Hours From STUDENT S, GRADE_REPORT G, SECTION SEC, COURSES C WHERE G.Student_Number=S.Student_Number AND G.Section_Identifier=SEC.Section_Identifier AND SEC.Course_Number=C.Course_Number AND S.Name = ?";
         PreparedStatement p = conn.prepareStatement(stmt1);
-        name = readEntry("Please enter your name: ");
+
+        name = readEntry("Please enter your name: ", scanner);
+
         p.clearParameters();
         p.setString(1, name);
         ResultSet r = p.executeQuery();
         double count=0, sum=0, avg=0;
+        
         while(r.next())
         {
             grade = r.getString(1).charAt(0);
@@ -45,12 +49,10 @@ class calGPA
         r.close();
     }
 
-    private static String readEntry(String prompt)
+    private static String readEntry(String prompt, Scanner scanner)
     {
         System.out.println(prompt);
-        Scanner scanner = new Scanner(System.in);
         String output = scanner.nextLine();
-        scanner.close();
         return output;
     }
 }

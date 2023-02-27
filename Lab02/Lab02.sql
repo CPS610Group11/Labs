@@ -37,7 +37,7 @@ SELECT * FROM Professor;
 
 -- Add a new attribute to the “Professor” table named “Income” and insert proper input values
 
-ALTER TABLE Professor ADD Income NUMBER(10,2);
+ALTER TYPE professor_type ADD ATTRIBUTE Income NUMBER(10,2) CASCADE;
 UPDATE Professor SET Income = 100000.00 WHERE Emp_id = '1';
 UPDATE Professor SET Income = 200000.00 WHERE Emp_id = '2';
 UPDATE Professor SET Income = 300000.00 WHERE Emp_id = '3';

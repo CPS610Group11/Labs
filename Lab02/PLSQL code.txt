@@ -1,0 +1,11 @@
+declare
+   CURSOR p_incomes IS
+      SELECT Name, Income FROM Professor;
+   tax NUMBER(10,2);
+begin
+   FOR record IN p_incomes LOOP
+      tax := record.Income * 0.3;
+      dbms_output.put_line(record.Name || ' has a tax of ' || tax);
+   END LOOP;
+end;
+/

@@ -1,0 +1,23 @@
+Engineering_Student <- select(Department = "Engineering") (Central_Student)
+
+Science_Student <- select(Department = "Science") (Central_Student)
+
+Engineering_Professor <- project(ProfName, EngOffice, EngPhone) (select(EngOffice != NULL) (Central_Professor))
+
+Science_Professor <- project(ProfName, SciOffice, SciPhone) (select(SciOffice != NULL) (Central_Professor))
+
+Engineering_Course <- select(Department = "Engineering") (Central_Course)
+
+Science_Course <- select(Department = "Science") (Central_Course)
+
+Engineering_Can_Teach <- project(CourseNo, ProfName, Preference, Evaluation) (select(Department = "Engineering") (Central_Can_Teach natjoin Central_Course))
+
+Science_Can_Teach <- project(CourseNo, ProfName, Preference, Evaluation) (select(Department = "Science") (Central_Can_Teach natjoin Central_Course))
+
+Engineering_Teaches <- project(CourseNo, ProfName, Term) (select(Department = "Engineering") (Central_Teaches natjoin Central_Course))
+
+Science_Teaches <- project(CourseNo, ProfName, Term) (select(Department = "Science") (Central_Teaches natjoin Central_Course))
+
+Engineering_Enrolled <- project(CourseNo, ProfName, StudentNo, Status) (select(Department = "Engineering") (Central_Enrolled natjoin Central_Course))
+
+Science_Enrolled <- project(CourseNo, ProfName, StudentNo, Status) (select(Department = "Science") (Central_Enrolled natjoin Central_Course))

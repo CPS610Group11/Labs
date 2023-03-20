@@ -1,0 +1,23 @@
+Step 5:
+
+project (StudentName, CourseName) ((Engineering_Enrolled join(StudentNo) Science_Enrolled) natjoin Central_Student natjoin Central_Courses)
+
+Step 6:
+
+project (StudentName) (select(GPA >= 4) (Science_Student join(StudentNo) Engineering_Student))
+
+Step 7:
+
+project (CourseName, Average(GPA)) (groupby(CourseName) (Central_Enrolled natjoin Central_Student natjoin Central_Course))
+
+Step 8:
+
+project (ProfName) (project(CourseNo, ProfName) (Central_Teaches) - project(CourseNo, ProfName) (Central_Can_Teach))
+
+Step 9:
+
+project (ProfName, EngOffice, SciOffice) (Central_Professor natjoin Engineering_Can_Teach natjoin Science_Can_Teach)
+
+Step 10:
+
+project (CourseName) (select(Credits = 1) (Central_Course))

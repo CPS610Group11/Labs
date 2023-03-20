@@ -1,11 +1,11 @@
 CREATE TABLE Central_Course_Size (
     CourseNo VARCHAR(255) NOT NULL,
-    CapSize INT NOT NULL DEFAULT 30,
+    CapSize INT DEFAULT 30 NOT NULL,
     PRIMARY KEY (CourseNo),
     FOREIGN KEY (CourseNo) REFERENCES Central_Course(CourseNo)
 );
 
-INSERT INTO Central_Course_Size (CourseNo, CapSize) VALUES ('101', 30);
+INSERT INTO Central_Course_Size VALUES ('101', 30);
 
 SET serveroutput on;
 DECLARE
@@ -28,11 +28,12 @@ THEN
 dbms_output.put_line('Course is full');
 ELSE
 /* drop the student's science courses if leaving the department*/
-DELETE FROM Central_Enrolled WHERE StudentNo = movingStudent;
+DELETE FROM Science_Enrolled WHERE StudentNo = movingStudent;
 /* move the student from the science database to the engineering database */
+DELETE FROM Science_Student WHERE StudentNo = movingStudent;
 INSERT INTO Engineering_Student VALUES (movingStudent, 'Adam Whittington', 'Computer Engineering', 4.00, 'Engineering');
 /* add the student into some engineering courses */
-INSERT INTO Central_Enrolled VALUES ('101', 'Test Professor 1', movingStudent, 'Enrolled');
+INSERT INTO Engineering_Enrolled VALUES ('101', 'Test Professor 1', movingStudent, 'Enrolled');
 END IF;
 dbms_output.put_line('Finished');
 END;

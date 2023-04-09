@@ -26,19 +26,24 @@ public class Lab04q2 {
         String stmtCheckLock = "SELECT * FROM Lock_Table WHERE Record = ?";
         String stmtAquireLock = "INSERT INTO Lock_Table VALUES (?, ?, ?)";
 
-        // q2 //
+        // Q2 //
         String stmtWrite = "UPDATE Records SET RecordValue = ? WHERE RecordIndex = ?";
-        
-        String stmtAquireLog = "INSERT INTO Log_Table VALUES (?, ?, ?, ?, ?, ?)";
+        String stmtcommit = "SELECT * FROM Log_Table WHERE TheAction = 'W' ORDER BY TimeStampID";
+        String stmtAquireLog = "INSERT INTO Log_Table VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String stmtAquireTemp = "INSERT INTO Temp_Table VALUES (?, ?, ?, ?, ?, ?, ?)";
         String stmtGetOldValue = "SELECT * FROM Records WHERE RecordIndex = ?";
+        String stmtClearTempTable = "DELETE  FROM Temp_Table";
         PreparedStatement pLog = conn.prepareStatement(stmtAquireLog);
+        PreparedStatement pTemp = conn.prepareStatement(stmtAquireTemp);
         PreparedStatement PGetOldValue = conn.prepareStatement(stmtGetOldValue);
-        //PreparedStatement pWrite = conn.prepareStatement(stmtWrite);
-        // / / 
+        PreparedStatement pcommit = conn.prepareStatement(stmtcommit);
+        PreparedStatement pClearTempTable = conn.prepareStatement(stmtClearTempTable);
+        //-----------------------------------------------------------------------------// 
 
         String stmtUpgradeLock = "UPDATE Lock_Table SET LockType = 'exclusive' WHERE Record = ?";
         String stmtReleaseLock = "DELETE FROM Lock_Table WHERE Record = ?";
         String stmtReleaseAllLock = "DELETE FROM Lock_Table WHERE LockOwner = ?";
+
         
         PreparedStatement pRead = conn.prepareStatement(stmtRead);
         PreparedStatement pWrite = conn.prepareStatement(stmtWrite);
@@ -63,7 +68,7 @@ public class Lab04q2 {
         while(moreWork)
         {
             moreWork = false;
-            System.out.print("-------------------------------------------"); 
+            System.out.println("-------------------------------------------"); 
             for (Transaction transaction : transactionList)
             {
                 while(transaction.currentTask < transaction.tasks.length)
@@ -73,11 +78,22 @@ public class Lab04q2 {
                         if(transaction.tasks[transaction.currentTask].taskType == 'C'){
                             
                             
-                            // pLog.setInt(3, 0);
-                            // pLog.setInt(4, 0);
-                            // pLog.setString(5, ("T"+Integer.toString(transaction.transactionNo)));
-                            // pLog.setInt(6, (countTasks-1));
-                            //pLog.executeQuery();
+
+                            ResultSet changedValues = pcommit.executeQuery();
+
+                            while(changedValues.next())
+                                {
+
+                                int index = changedValues.getInt(2);
+                                int value = changedValues.getInt(4);
+    
+                                pWrite.clearParameters();
+                                pWrite.setInt(1, value);
+                                pWrite.setInt(2, index);
+                                pWrite.executeUpdate();
+
+                            }
+
                             System.out.print("C: "); 
                             System.out.print(""+countTasks);
                             System.out.println(" T" + Integer.toString(transaction.transactionNo) + "  "+ ( countTasks-1));
@@ -85,17 +101,27 @@ public class Lab04q2 {
                             pReleaseAllLock.clearParameters();
                             pReleaseAllLock.setInt(1, transaction.transactionNo);
                             pReleaseAllLock.executeUpdate();
+
+
+                            //pClearTempTable.executeUpdate();
+
+                            System.out.println("The Temp Table got cleared "); 
+
                             countTasks++;
                             transaction.currentTask += 1;
 
-                        }else
+                        }
+                        else
                         {
-                            // Saving record information into log_table
+                            // Saving record information into log_table:
                             pLog.clearParameters();
+                            pTemp.clearParameters();
                             //The TimeStampId:
                             pLog.setInt(1,countTasks);
+                            pTemp.setInt(1,countTasks);
                             // The RecordIndex
                             pLog.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
+                            pTemp.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
                             
                             // Geting the old value from the records Table.
                             PGetOldValue.clearParameters();
@@ -104,6 +130,7 @@ public class Lab04q2 {
                             oldValue.next();
                             // The OldValue
                             pLog.setInt(3, oldValue.getInt(2));
+                            pTemp.setInt(3, oldValue.getInt(2));
                             
 
                             if(transaction.tasks[transaction.currentTask].taskType == 'R')
@@ -116,6 +143,7 @@ public class Lab04q2 {
 
                                 pCheckLock.clearParameters();
                                 pCheckLock.setInt(1, transaction.tasks[transaction.currentTask].recordIndex);
+                                
                                 ResultSet rCheckLock = pCheckLock.executeQuery();
 
                                 if(rCheckLock.next())
@@ -134,8 +162,24 @@ public class Lab04q2 {
                                         // Saving the value of the record into log table
                                         System.out.print(" value: " + Integer.toString(rRead.getInt(2) ));
                                         pLog.setInt(4, rRead.getInt(2) );
+                                        pTemp.setInt(4, rRead.getInt(2) );
                                         //
                                         rRead.close();
+                                                                    
+                            pLog.setInt(5, transaction.transactionNo);
+                            pTemp.setInt(5, transaction.transactionNo);
+
+                            pLog.setInt(6, ( countTasks-1));
+                            pTemp.setInt(6, ( countTasks-1));
+
+                            pLog.setString(7, "R");
+                            pTemp.setString(7, "R");
+                            System.out.print(" prT: " + ( countTasks-1));
+                            countTasks++;
+                            System.out.println("  ");
+                            pLog.executeQuery();
+                            pTemp.executeQuery();
+                            transaction.currentTask += 1;
                                         
                                     }
                                     else
@@ -151,8 +195,25 @@ public class Lab04q2 {
                                             // Saving the value of the record into log table
                                             System.out.print(" value: " + Integer.toString(rRead.getInt(2) ));
                                             pLog.setInt(4, rRead.getInt(2) );
+                                            pTemp.setInt(4, rRead.getInt(2) );
                                             //
                                             rRead.close();
+                                                                        
+                            pLog.setInt(5, transaction.transactionNo);
+                            pTemp.setInt(5, transaction.transactionNo);
+
+                            pLog.setInt(6, ( countTasks-1));
+                            pTemp.setInt(6, ( countTasks-1));
+
+                            pLog.setString(7, "R");
+                            pTemp.setString(7, "R");
+                            System.out.print(" prT: " + ( countTasks-1));
+                            countTasks++;
+                            System.out.println("  ");
+                            pLog.executeQuery();
+                            pTemp.executeQuery();
+
+                            transaction.currentTask += 1;
                                         }
                                     else{
                                         System.out.println("Record " + Integer.toString(transaction.tasks[transaction.currentTask].recordIndex) + " locked by transaction " + Integer.toString(rCheckLock.getInt(3)) + ", skipping transaction " + Integer.toString(transaction.transactionNo) + "'s task for this iteration.");
@@ -160,7 +221,7 @@ public class Lab04q2 {
                                     }
                                 }
                                 else
-                                {//when there is no lock on the record we put a shared lock and read
+                                {  //when there is no lock on the record we put a shared lock and read
                                     pAquireLock.clearParameters();
                                     pAquireLock.setInt(1, transaction.tasks[transaction.currentTask].recordIndex);
                                     pAquireLock.setString(2, "shared");
@@ -176,9 +237,26 @@ public class Lab04q2 {
                                     // Saving the value of the record into log table
                                     System.out.print(" value " + Integer.toString(rRead.getInt(2) ));
                                     pLog.setInt(4, rRead.getInt(2) );
+                                    pTemp.setInt(4, rRead.getInt(2) );
                                     // in R -> if newvalue = old value then only show one of them
                                     rRead.close();
-                                    
+
+                                                                
+                                    pLog.setInt(5, transaction.transactionNo);
+                                    pTemp.setInt(5, transaction.transactionNo);
+        
+                                    pLog.setInt(6, ( countTasks-1));
+                                    pTemp.setInt(6, ( countTasks-1));
+        
+                                    pLog.setString(7, "R");
+                                    pTemp.setString(7, "R");
+                                    System.out.print(" prT: " + ( countTasks-1));
+                                    countTasks++;
+                                    System.out.println("  ");
+                                    pLog.executeQuery();
+                                    pTemp.executeQuery();
+        
+                                    transaction.currentTask += 1;
                                 }
 
                                 rCheckLock.close();
@@ -208,15 +286,31 @@ public class Lab04q2 {
                                         }
                                     // System.out.println("Transaction has exclusive lock on record, writing value.");
 
-                                        pWrite.clearParameters();
-                                        pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
-                                        pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
-                                        pWrite.executeUpdate();
+                                        // pWrite.clearParameters();
+                                        // pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
+                                        // pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
+                                        // pWrite.executeUpdate();
 
 
                                         //Saving New value into the Log_table
                                         pLog.setInt(4,transaction.tasks[transaction.currentTask].recordValue);
+                                        pTemp.setInt(4,transaction.tasks[transaction.currentTask].recordValue);
+
                                         System.out.print(" new " + Integer.toString(transaction.tasks[transaction.currentTask].recordValue) );
+                            //???????????????????SAVING????????????????????????????
+                                        pLog.setInt(5, transaction.transactionNo);
+                                        pTemp.setInt(5, transaction.transactionNo);
+                                        pTemp.setInt(6, ( countTasks-1));
+                                        pLog.setInt(6, ( countTasks-1));
+                                        System.out.print(" prT: " + ( countTasks-1));
+                                        pLog.setString(7, "W");
+                                        pTemp.setString(7, "W");
+                                        countTasks++;
+                                        System.out.println("  ");
+                                        pLog.executeQuery();
+                                        pTemp.executeQuery();
+                                        transaction.currentTask += 1;
+
                                     }
                                     else
                                     {
@@ -232,43 +326,52 @@ public class Lab04q2 {
 
                                     pAquireLock.executeUpdate();
 
-                                    pWrite.clearParameters();
-                                    pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
-                                    pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
-                                    pWrite.executeUpdate();
+                                    // pWrite.clearParameters();
+                                    // pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
+                                    // pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
+                                    // pWrite.executeUpdate();
 
   
                                     // Saving the value->newValueof in log table
                                     pLog.setInt(4,transaction.tasks[transaction.currentTask].recordValue);
+                                    pTemp.setInt(4,transaction.tasks[transaction.currentTask].recordValue);
+                                   
                                     System.out.print(" new: " + Integer.toString(transaction.tasks[transaction.currentTask].recordValue) );
                                         // 
                                      oldValue.close();
+                    //?????????????????????SAVING????????????????????????????                               
+                            pLog.setInt(5, transaction.transactionNo);
+                            pTemp.setInt(5, transaction.transactionNo);
+                            
+                            pLog.setInt(6, ( countTasks-1));
+                            pTemp.setInt(6, ( countTasks-1));
+                            System.out.print(" prT: " + ( countTasks-1));
+
+                            pLog.setString(7, "W");
+                            pTemp.setString(7, "W");
+                            countTasks++;
+                            System.out.println("  ");
+                            pLog.executeQuery();
+                            pTemp.executeQuery();
+                            transaction.currentTask += 1;
+
+
                                 }
 
                                 rCheckLock.close();
                             }
 
                         
-                            moreWork = true;
-                            pLog.setInt(5, transaction.transactionNo);
-                            
-                            pLog.setInt(6, ( countTasks-1));
-                            System.out.print(" prT: " + ( countTasks-1));
-                            countTasks++;
-                            System.out.println("  ");
-                            pLog.executeQuery();
-                            //pLog.close();
 
-                            transaction.currentTask += 1;
 
                         }
-                    
+                    moreWork = true;
                 }
 
-                    
                     System.out.println("Transaction " + transaction.transactionNo + " is out of tasks. Moving on to next transaction.");
                 
             }
+            
         }
 
         System.out.println("All transactions completed!");

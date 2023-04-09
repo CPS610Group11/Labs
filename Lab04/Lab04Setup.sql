@@ -12,17 +12,34 @@ CREATE TABLE Lock_Table (
     Foreign Key (Record) References Records(RecordIndex)
 );
 
+-- This table act as the temp buffer, all the elements get deleted after each commit
 
-CREATE TABLE Log_Table (
-    TimeStampID int AUTO_INCREMENT, --1
+CREATE TABLE Temp_Table (
+    TimeStampID int, --1
     RecordIndex int, --2
     OldValue int, --3
     NewValue int, --4
     TransactionID int, --5
     previousTimeStampID int, --6
+    TheAction varchar(20), --7
     Primary Key (TimeStampID),
-    Foreign Key (Record) References Records(RecordIndex)
+    Foreign Key (RecordIndex) References Records(RecordIndex)
 );
+
+drop table Log_Table;
+
+CREATE TABLE Log_Table (
+    TimeStampID int, --1
+    RecordIndex int, --2
+    OldValue int, --3
+    NewValue int, --4
+    TransactionID int, --5
+    previousTimeStampID int, --6
+    TheAction varchar(20), --7
+    Primary Key (TimeStampID),
+    Foreign Key (RecordIndex) References Records(RecordIndex)
+);
+
 
 INSERT INTO Records VALUES (1, 1);
 INSERT INTO Records VALUES (2, 2);

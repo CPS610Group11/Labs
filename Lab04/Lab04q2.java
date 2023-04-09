@@ -286,10 +286,10 @@ public class Lab04q2 {
                                         }
                                     // System.out.println("Transaction has exclusive lock on record, writing value.");
 
-                                        // pWrite.clearParameters();
-                                        // pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
-                                        // pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
-                                        // pWrite.executeUpdate();
+                                        pWrite.clearParameters();
+                                        pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
+                                        pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
+                                        pWrite.executeUpdate();
 
 
                                         //Saving New value into the Log_table
@@ -326,10 +326,10 @@ public class Lab04q2 {
 
                                     pAquireLock.executeUpdate();
 
-                                    // pWrite.clearParameters();
-                                    // pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
-                                    // pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
-                                    // pWrite.executeUpdate();
+                                    pWrite.clearParameters();
+                                    pWrite.setInt(1, transaction.tasks[transaction.currentTask].recordValue);
+                                    pWrite.setInt(2, transaction.tasks[transaction.currentTask].recordIndex);
+                                    pWrite.executeUpdate();
 
   
                                     // Saving the value->newValueof in log table

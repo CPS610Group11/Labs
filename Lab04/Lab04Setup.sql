@@ -52,4 +52,7 @@ INSERT INTO Records VALUES (8, 8);
 INSERT INTO Records VALUES (9, 9);
 INSERT INTO Records VALUES (10, 10);
 
+-- DELETE FROM Log_Table;
+-- DELETE FROM Temp_Table;
+
 COMMIT;

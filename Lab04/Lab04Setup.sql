@@ -12,6 +12,18 @@ CREATE TABLE Lock_Table (
     Foreign Key (Record) References Records(RecordIndex)
 );
 
+
+CREATE TABLE Log_Table (
+    TimeStampID int AUTO_INCREMENT, --1
+    RecordIndex int, --2
+    OldValue int, --3
+    NewValue int, --4
+    TransactionID int, --5
+    previousTimeStampID int, --6
+    Primary Key (TimeStampID),
+    Foreign Key (Record) References Records(RecordIndex)
+);
+
 INSERT INTO Records VALUES (1, 1);
 INSERT INTO Records VALUES (2, 2);
 INSERT INTO Records VALUES (3, 3);
